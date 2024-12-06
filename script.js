@@ -22,18 +22,23 @@ document.getElementById('fetch').addEventListener('click', async () => {
     try {
         // Fetch user's contributions
         const url = `https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiuser=${encodeURIComponent(username)}&ailimit=500&format=json&origin=*`;
+        console.log('Fetching from URL:', url);
         const response = await fetch(url);
         const data = await response.json();
+        console.log('API Response:', data);
 
         const images = data.query?.allimages || [];
+        console.log('Found images:', images.length);
         const locations = [];
 
         // Process each image
         for (const image of images) {
             const fileTitle = image.title;
             const metadataUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileTitle)}&prop=imageinfo&iiprop=extmetadata|url&format=json&origin=*`;
+            console.log('Fetching metadata from:', metadataUrl);
             const fileResponse = await fetch(metadataUrl);
             const fileData = await fileResponse.json();
+            console.log('Metadata response:', fileData);
 
             const pages = Object.values(fileData.query.pages);
             for (const page of pages) {
