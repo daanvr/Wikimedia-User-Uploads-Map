@@ -143,3 +143,15 @@ button:hover {
     color: #000;
     background: transparent;
 }
+.hover-popup {
+    padding: 5px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.mapboxgl-popup {
+    z-index: 3;
+}
