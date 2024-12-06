@@ -90,10 +90,22 @@ async function fetchUserData() {
 
         // Add new markers
         locations.forEach(location => {
-            const popup = new mapboxgl.Popup({ offset: 25 })
+            const popup = new mapboxgl.Popup({ offset: 25, className: 'custom-popup' })
                 .setHTML(`
-                    <h3>${location.title}</h3>
-                    ${location.thumbUrl ? `<img src="${location.thumbUrl}" style="max-width:200px;">` : ''}
+                    <div class="popup-content">
+                        <h3>${location.title.replace('File:', '')}</h3>
+                        ${location.thumbUrl ? `
+                            <div class="popup-image">
+                                <img src="${location.thumbUrl}" alt="${location.title}">
+                            </div>
+                        ` : ''}
+                        <div class="popup-footer">
+                            <a href="https://commons.wikimedia.org/wiki/${encodeURIComponent(location.title)}" 
+                               target="_blank" rel="noopener noreferrer">
+                               View on Wikimedia Commons
+                            </a>
+                        </div>
+                    </div>
                 `);
 
             new mapboxgl.Marker()
