@@ -38,13 +38,38 @@ document.getElementById('fetch').addEventListener('click', async () => {
             const pages = Object.values(fileData.query.pages);
             for (const page of pages) {
                 const metadata = page.imageinfo?.[0]?.extmetadata || {};
-                if (metadata.GPSLatitude && metadata.GPSLongitude) {
-                    const lat = parseFloat(metadata.GPSLatitude.value);
-                    const lon = parseFloat(metadata.GPSLongitude.value);
-                    const title = page.title;
-                    const thumbUrl = page.imageinfo?.[0]?.url;
-
-                    locations.push({ lat, lon, title, thumbUrl });
+                console.log('Processing file:', page.title);
+                console.log('Metadata:', metadata);
+                
+                // Try different metadata fields that might contain coordinates
+                if (metadata.GPSLatitude?.value && metadata.GPSLongitude?.value) {
+                    let lat = metadata.GPSLatitude.value;
+                    let lon = metadata.GPSLongitude.value;
+                    
+                    // Clean up coordinate strings if needed
+                    lat = lat.replace(/[^\d.-]/g, '');
+                    lon = lon.replace(/[^\d.-]/g, '');
+                    
+                    lat = parseFloat(lat);
+                    lon = parseFloat(lon);
+                    
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        const title = page.title;
+                        const thumbUrl = page.imageinfo?.[0]?.url;
+                        console.log('Found coordinates:', lat, lon);
+                        locations.push({ lat, lon, title, thumbUrl });
+                    }
+                } else if (metadata.Coordinates?.value) {
+                    console.log('Found Coordinates field:', metadata.Coordinates.value);
+                    // Try to parse coordinates in format "XX.XXX; YY.YYY"
+                    const coords = metadata.Coordinates.value.split(';').map(c => parseFloat(c.trim()));
+                    if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+                        const [lat, lon] = coords;
+                        const title = page.title;
+                        const thumbUrl = page.imageinfo?.[0]?.url;
+                        console.log('Parsed coordinates:', lat, lon);
+                        locations.push({ lat, lon, title, thumbUrl });
+                    }
                 }
             }
         }
