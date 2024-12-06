@@ -117,13 +117,22 @@ button:hover {
     padding: 12px;
     text-align: center;
     border-top: 1px solid #eee;
+    background: white;
 }
 
-.popup-footer a {
+.commons-link {
     color: #0078d4;
     text-decoration: none;
     font-size: 13px;
     display: inline-block;
+    padding: 8px 12px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    margin: 5px 0;
+}
+
+.commons-link:hover {
+    background: #e0e0e0;
 }
 
 .popup-footer a:hover {

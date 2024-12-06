@@ -91,23 +91,27 @@ async function fetchUserData() {
         // Add new markers
         locations.forEach(location => {
             // Create a popup but don't add it to the marker yet
-            const popup = new mapboxgl.Popup({ offset: 25, className: 'custom-popup' })
-                .setHTML(`
-                    <div class="popup-content">
-                        <h3>${location.title.replace('File:', '')}</h3>
-                        ${location.thumbUrl ? `
-                            <div class="popup-image">
-                                <img src="${location.thumbUrl.replace(/\/\d+px-/, '/200px-')}" alt="${location.title}">
-                            </div>
-                        ` : ''}
-                        <div class="popup-footer">
-                            <a href="https://commons.wikimedia.org/wiki/${encodeURIComponent(location.title)}" 
-                               target="_blank" rel="noopener noreferrer">
-                               View on Wikimedia Commons
-                            </a>
+            const popup = new mapboxgl.Popup({ 
+                offset: 25, 
+                className: 'custom-popup',
+                closeOnClick: false
+            }).setHTML(`
+                <div class="popup-content">
+                    <h3>${location.title.replace('File:', '')}</h3>
+                    ${location.thumbUrl ? `
+                        <div class="popup-image">
+                            <img src="${location.thumbUrl.replace(/(\d+)px-/, '300px-')}" alt="${location.title}">
                         </div>
+                    ` : ''}
+                    <div class="popup-footer">
+                        <a href="https://commons.wikimedia.org/wiki/${encodeURIComponent(location.title)}" 
+                           target="_blank" rel="noopener noreferrer"
+                           class="commons-link">
+                           View on Wikimedia Commons
+                        </a>
                     </div>
-                `);
+                </div>
+            `);
 
             const marker = new mapboxgl.Marker()
                 .setLngLat([location.lon, location.lat])
