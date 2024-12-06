@@ -20,6 +20,9 @@ async function fetchUserData() {
         return;
     }
 
+    // Show loading indicator
+    document.getElementById('loading').style.display = 'block';
+
     try {
         // Fetch user's contributions
         const url = `https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiuser=${encodeURIComponent(username)}&aisort=timestamp&ailimit=500&format=json&origin=*`;
@@ -126,6 +129,9 @@ async function fetchUserData() {
         console.error('Error:', error);
         console.log('Error fetching data. Please try again.');
         document.getElementById('stats').innerHTML = 'Error fetching data. Please try again.';
+    } finally {
+        // Hide loading indicator
+        document.getElementById('loading').style.display = 'none';
     }
 }
 
