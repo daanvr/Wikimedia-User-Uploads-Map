@@ -15,7 +15,7 @@ map.addControl(new mapboxgl.NavigationControl());
 document.getElementById('fetch').addEventListener('click', async () => {
     const username = document.getElementById('username').value.trim();
     if (!username) {
-        alert('Please enter a Wikimedia username.');
+        console.log('Please enter a Wikimedia username.');
         return;
     }
 
@@ -69,10 +69,10 @@ document.getElementById('fetch').addEventListener('click', async () => {
         if (locations.length) {
             map.flyTo({ center: [locations[0].lon, locations[0].lat], zoom: 10 });
         } else {
-            alert('No geotagged images found for this user.');
+            console.log('No geotagged images found for this user.');
         }
     } catch (error) {
         console.error('Error:', error);
-        alert('Error fetching data. Please try again.');
+        console.log('Error fetching data. Please try again.');
     }
 });
