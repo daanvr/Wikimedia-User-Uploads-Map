@@ -21,7 +21,7 @@ document.getElementById('fetch').addEventListener('click', async () => {
 
     try {
         // Fetch user's contributions
-        const url = `https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiuser=${encodeURIComponent(username)}&ailimit=500&format=json&origin=*`;
+        const url = `https://commons.wikimedia.org/w/api.php?action=query&list=allimages&aiuser=${encodeURIComponent(username)}&aisort=timestamp&ailimit=500&format=json&origin=*`;
         console.log('Fetching from URL:', url);
         const response = await fetch(url);
         const data = await response.json();
