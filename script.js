@@ -12,7 +12,8 @@ const map = new mapboxgl.Map({
 // Add map controls
 map.addControl(new mapboxgl.NavigationControl());
 
-document.getElementById('fetch').addEventListener('click', async () => {
+// Function to handle the fetch operation
+async function fetchUserData() {
     const username = document.getElementById('username').value.trim();
     if (!username) {
         console.log('Please enter a Wikimedia username.');
@@ -98,13 +99,42 @@ document.getElementById('fetch').addEventListener('click', async () => {
                 .addTo(map);
         });
 
+        // Update stats
+        const statsDiv = document.getElementById('stats');
+        statsDiv.innerHTML = `
+            Total images found: ${images.length}<br>
+            Images with location: ${locations.length}
+        `;
+
         if (locations.length) {
-            map.flyTo({ center: [locations[0].lon, locations[0].lat], zoom: 10 });
+            // Calculate bounds of all markers
+            const bounds = new mapboxgl.LngLatBounds();
+            locations.forEach(location => {
+                bounds.extend([location.lon, location.lat]);
+            });
+            
+            // Fit map to bounds with padding
+            map.fitBounds(bounds, {
+                padding: 50,
+                maxZoom: 16
+            });
         } else {
             console.log('No geotagged images found for this user.');
+            statsDiv.innerHTML += '<br>No geotagged images found.';
         }
     } catch (error) {
         console.error('Error:', error);
         console.log('Error fetching data. Please try again.');
+        document.getElementById('stats').innerHTML = 'Error fetching data. Please try again.';
+    }
+}
+
+// Add click event listener
+document.getElementById('fetch').addEventListener('click', fetchUserData);
+
+// Add enter key event listener
+document.getElementById('username').addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+        fetchUserData();
     }
 });

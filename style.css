@@ -34,3 +34,9 @@ button {
 button:hover {
     background: #005a9e;
 }
+
+#stats {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #666;
+}
