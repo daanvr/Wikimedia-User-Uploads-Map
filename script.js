@@ -31,16 +31,18 @@ document.getElementById('fetch').addEventListener('click', async () => {
         console.log('Found images:', images.length);
         const locations = [];
 
-        // Process each image
-        for (const image of images) {
-            const fileTitle = image.title;
-            const metadataUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileTitle)}&prop=imageinfo&iiprop=extmetadata|url&format=json&origin=*`;
-            console.log('Fetching metadata from:', metadataUrl);
+        // Batch process images in groups of 50
+        for (let i = 0; i < images.length; i += 50) {
+            const batch = images.slice(i, i + 50);
+            const titles = batch.map(img => img.title).join('|');
+            
+            const metadataUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(titles)}&prop=imageinfo&iiprop=extmetadata|url&format=json&origin=*`;
+            console.log('Fetching metadata batch from:', metadataUrl);
             const fileResponse = await fetch(metadataUrl);
             const fileData = await fileResponse.json();
-            console.log('Metadata response:', fileData);
+            console.log('Metadata batch response:', fileData);
 
-            const pages = Object.values(fileData.query.pages);
+            const pages = Object.values(fileData.query?.pages || {});
             for (const page of pages) {
                 const metadata = page.imageinfo?.[0]?.extmetadata || {};
                 console.log('Processing file:', page.title);
