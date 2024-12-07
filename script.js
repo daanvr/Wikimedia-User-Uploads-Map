@@ -161,7 +161,7 @@ async function fetchUserData() {
 
         // Update stats
         const statsDiv = document.getElementById('stats');
-        statsDiv.innerHTML = `User: ${username} | Total: ${images.length} | Located: ${locations.length}`;
+        statsDiv.innerHTML = `User: ${username} | Images: ${images.length} | Located: ${locations.length}`;
 
         if (locations.length) {
             // Calculate bounds of all markers
