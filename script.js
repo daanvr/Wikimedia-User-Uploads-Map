@@ -120,10 +120,20 @@ async function fetchUserData() {
             let hoverPopup = null;
 
             markerElement.addEventListener('mouseenter', () => {
-                hoverPopup = new mapboxgl.Popup({ offset: 25, closeButton: false })
+                if (location.thumbUrl) {
+                    hoverPopup = new mapboxgl.Popup({ 
+                        offset: 25, 
+                        closeButton: false,
+                        className: 'hover-popup'
+                    })
                     .setLngLat([location.lon, location.lat])
-                    .setHTML(`<div class="hover-popup">${location.title.replace('File:', '')}</div>`)
+                    .setHTML(`
+                        <div class="popup-image">
+                            <img src="${location.thumbUrl.replace(/wikipedia\/commons\/([a-z0-9]\/[a-z0-9]{2})\//, 'wikipedia/commons/thumb/$1/')}/300px-${location.title.replace('File:', '')}" alt="${location.title}">
+                        </div>
+                    `)
                     .addTo(map);
+                }
             });
 
             markerElement.addEventListener('mouseleave', () => {
@@ -133,8 +143,15 @@ async function fetchUserData() {
                 }
             });
 
-            // Add click functionality
-            markerElement.addEventListener('click', () => {
+            // Add click handler to map to close popups
+            map.on('click', () => {
+                const existingPopups = document.getElementsByClassName('mapboxgl-popup');
+                Array.from(existingPopups).forEach(popup => popup.remove());
+            });
+
+            // Add click functionality to marker
+            markerElement.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent the map click handler from firing
                 // Remove any existing popups
                 const existingPopups = document.getElementsByClassName('mapboxgl-popup');
                 Array.from(existingPopups).forEach(popup => popup.remove());
