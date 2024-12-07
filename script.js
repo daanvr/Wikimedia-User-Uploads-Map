@@ -70,7 +70,7 @@ async function fetchUserData() {
                 // Process coordinates from the API response
                 if (page.coordinates) {
                     for (const coord of page.coordinates) {
-                        console.log('Processing coordinate:', {
+                        console.log('Processing coordinate from API:', {
                             type: coord.type,
                             lat: coord.lat,
                             lon: coord.lon,
@@ -88,6 +88,51 @@ async function fetchUserData() {
                                 type: locationType
                             });
                         }
+                    }
+                }
+
+                // Also check metadata for coordinates
+                const metadata = page.imageinfo?.[0]?.extmetadata || {};
+                
+                // Check for camera location in metadata
+                if (metadata.GPSLatitude?.value && metadata.GPSLongitude?.value) {
+                    const lat = parseFloat(metadata.GPSLatitude.value);
+                    const lon = parseFloat(metadata.GPSLongitude.value);
+                    
+                    console.log('Processing camera location from metadata:', {
+                        lat: lat,
+                        lon: lon,
+                        title: title
+                    });
+
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        locations.push({
+                            lat: lat,
+                            lon: lon,
+                            title,
+                            thumbUrl,
+                            type: 'camera'
+                        });
+                    }
+                }
+
+                // Check for subject location in metadata
+                if (metadata.Coordinates?.value) {
+                    const coords = metadata.Coordinates.value.split(';').map(c => parseFloat(c.trim()));
+                    
+                    console.log('Processing subject location from metadata:', {
+                        coords: coords,
+                        title: title
+                    });
+
+                    if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+                        locations.push({
+                            lat: coords[0],
+                            lon: coords[1],
+                            title,
+                            thumbUrl,
+                            type: 'subject'
+                        });
                     }
                 }
             }
