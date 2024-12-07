@@ -138,12 +138,7 @@ async function fetchUserData() {
                     8, 5,  // At zoom level 8, circles are 5px
                     16, 7  // At zoom level 16, circles are 7px
                 ],
-                'circle-color': [
-                    'match',
-                    ['get', 'type'],
-                    'camera', '#0078d4',
-                    '#d40000'
-                ],
+                'circle-color': '#a34231',
                 'circle-stroke-width': 1.5,
                 'circle-stroke-color': '#ffffff'
             }
@@ -160,7 +155,7 @@ async function fetchUserData() {
             
             if (properties.thumbUrl) {
                 hoverPopup = new mapboxgl.Popup({
-                    offset: 15,
+                    offset: 5,
                     closeButton: false,
                     className: 'hover-popup'
                 })
@@ -210,7 +205,7 @@ async function fetchUserData() {
             `;
 
             new mapboxgl.Popup({
-                offset: 15,
+                offset: 5,
                 className: 'custom-popup',
                 closeOnClick: false
             })
