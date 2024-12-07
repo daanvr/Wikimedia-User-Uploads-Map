@@ -76,29 +76,44 @@ async function fetchUserData() {
                 const title = page.title;
                 const thumbUrl = page.imageinfo?.[0]?.url;
 
+                // Add camera location if available
                 if (!isNaN(cameraLat) && !isNaN(cameraLon)) {
-                    locations.push({ lat: cameraLat, lon: cameraLon, title, thumbUrl, type: 'camera' });
+                    locations.push({ 
+                        lat: cameraLat, 
+                        lon: cameraLon, 
+                        title, 
+                        thumbUrl, 
+                        type: 'camera'
+                    });
                 }
 
+                // Add subject location from either GPS dest coordinates or regular coordinates
                 if (!isNaN(objectLat) && !isNaN(objectLon)) {
-                    locations.push({ lat: objectLat, lon: objectLon, title, thumbUrl, type: 'object' });
+                    locations.push({ 
+                        lat: objectLat, 
+                        lon: objectLon, 
+                        title, 
+                        thumbUrl, 
+                        type: 'subject'
+                    });
                 } else if (metadata.Coordinates?.value) {
-                    console.log('Found Coordinates field:', metadata.Coordinates.value);
-                    // Try to parse coordinates in format "XX.XXX; YY.YYY"
                     const coords = metadata.Coordinates.value.split(';').map(c => parseFloat(c.trim()));
                     if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
-                        const [lat, lon] = coords;
-                        const title = page.title;
-                        const thumbUrl = page.imageinfo?.[0]?.url;
-                        console.log('Parsed coordinates:', lat, lon);
-                        locations.push({ lat, lon, title, thumbUrl });
+                        locations.push({ 
+                            lat: coords[0], 
+                            lon: coords[1], 
+                            title, 
+                            thumbUrl, 
+                            type: 'subject'
+                        });
                     }
                 }
             }
         }
 
         // Remove existing layers and sources
-        if (map.getLayer('photo-locations')) map.removeLayer('photo-locations');
+        if (map.getLayer('subject-locations')) map.removeLayer('subject-locations');
+        if (map.getLayer('camera-locations')) map.removeLayer('camera-locations');
         if (map.getSource('photos')) map.removeSource('photos');
 
         // Convert locations to GeoJSON
@@ -124,21 +139,43 @@ async function fetchUserData() {
             data: geojson
         });
 
-        // Add the circle layer
+        // Add the subject locations layer
         map.addLayer({
-            'id': 'photo-locations',
+            'id': 'subject-locations',
             'type': 'circle',
             'source': 'photos',
+            'filter': ['==', ['get', 'type'], 'subject'],
             'paint': {
                 'circle-radius': [
                     'interpolate',
                     ['linear'],
                     ['zoom'],
-                    2, 3,  // At zoom level 2, circles are 3px
-                    8, 5,  // At zoom level 8, circles are 5px
-                    16, 7  // At zoom level 16, circles are 7px
+                    2, 3,
+                    8, 5,
+                    16, 7
                 ],
                 'circle-color': '#a34231',
+                'circle-stroke-width': 1.5,
+                'circle-stroke-color': '#ffffff'
+            }
+        });
+
+        // Add the camera locations layer (on top)
+        map.addLayer({
+            'id': 'camera-locations',
+            'type': 'circle',
+            'source': 'photos',
+            'filter': ['==', ['get', 'type'], 'camera'],
+            'paint': {
+                'circle-radius': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    2, 3,
+                    8, 5,
+                    16, 7
+                ],
+                'circle-color': '#6b1b1b',
                 'circle-stroke-width': 1.5,
                 'circle-stroke-color': '#ffffff'
             }
@@ -147,7 +184,7 @@ async function fetchUserData() {
         // Add hover state
         let hoverPopup = null;
         
-        map.on('mouseenter', 'photo-locations', (e) => {
+        map.on('mouseenter', ['subject-locations', 'camera-locations'], (e) => {
             map.getCanvas().style.cursor = 'pointer';
             
             const coordinates = e.features[0].geometry.coordinates.slice();
@@ -169,7 +206,7 @@ async function fetchUserData() {
             }
         });
 
-        map.on('mouseleave', 'photo-locations', () => {
+        map.on('mouseleave', ['subject-locations', 'camera-locations'], () => {
             map.getCanvas().style.cursor = '';
             if (hoverPopup) {
                 hoverPopup.remove();
@@ -178,7 +215,7 @@ async function fetchUserData() {
         });
 
         // Handle clicks
-        map.on('click', 'photo-locations', (e) => {
+        map.on('click', ['subject-locations', 'camera-locations'], (e) => {
             const coordinates = e.features[0].geometry.coordinates.slice();
             const properties = e.features[0].properties;
             
@@ -217,7 +254,7 @@ async function fetchUserData() {
         // Add click handler to map to close popups
         map.on('click', (e) => {
             // Only close popups if we didn't click a feature
-            if (!map.queryRenderedFeatures(e.point, { layers: ['photo-locations'] }).length) {
+            if (!map.queryRenderedFeatures(e.point, { layers: ['subject-locations', 'camera-locations'] }).length) {
                 const existingPopups = document.getElementsByClassName('mapboxgl-popup');
                 Array.from(existingPopups).forEach(popup => popup.remove());
             }
