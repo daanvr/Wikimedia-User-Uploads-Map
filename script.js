@@ -117,7 +117,7 @@ async function fetchUserData() {
                 if (metadata.Coordinates?.value) {
                     const coords = metadata.Coordinates.value.split(';').map(c => parseFloat(c.trim()));
                     
-                    console.log('Processing subject location from metadata:', {
+                    console.log('Processing object location from metadata:', {
                         coords: coords,
                         title: title
                     });
@@ -128,7 +128,7 @@ async function fetchUserData() {
                             lon: coords[1],
                             title,
                             thumbUrl,
-                            type: 'subject'
+                            type: 'object'
                         });
                     }
                 }
