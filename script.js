@@ -64,71 +64,30 @@ async function fetchUserData() {
                     metadata: metadata
                 });
                 
-                // Extract camera location
-                let cameraLat, cameraLon;
-                if (metadata.GPSLatitude?.value && metadata.GPSLongitude?.value) {
-                    cameraLat = parseFloat(metadata.GPSLatitude.value.replace(/[^\d.-]/g, ''));
-                    cameraLon = parseFloat(metadata.GPSLongitude.value.replace(/[^\d.-]/g, ''));
-                }
-
-                // Extract object location
-                let objectLat, objectLon;
-                if (metadata.GPSDestLatitude?.value && metadata.GPSDestLongitude?.value) {
-                    objectLat = parseFloat(metadata.GPSDestLatitude.value.replace(/[^\d.-]/g, ''));
-                    objectLon = parseFloat(metadata.GPSDestLongitude.value.replace(/[^\d.-]/g, ''));
-                }
-
                 const title = page.title;
                 const thumbUrl = page.imageinfo?.[0]?.url;
 
-                // Add camera location if available
-                if (!isNaN(cameraLat) && !isNaN(cameraLon)) {
-                    console.log('Adding camera location:', {
-                        lat: cameraLat,
-                        lon: cameraLon,
-                        title: title
-                    });
-                    locations.push({ 
-                        lat: cameraLat, 
-                        lon: cameraLon, 
-                        title, 
-                        thumbUrl, 
-                        type: 'camera'
-                    });
-                }
-
-                // First try to add subject location from GPS destination coordinates
-                if (!isNaN(objectLat) && !isNaN(objectLon)) {
-                    console.log('Adding subject location from GPS dest:', {
-                        lat: objectLat,
-                        lon: objectLon,
-                        title: title
-                    });
-                    locations.push({ 
-                        lat: objectLat, 
-                        lon: objectLon, 
-                        title, 
-                        thumbUrl, 
-                        type: 'subject'
-                    });
-                } 
-                // If no GPS destination coordinates, try regular coordinates
-                // but only if there was no camera location (to avoid duplicates)
-                else if (metadata.Coordinates?.value && isNaN(cameraLat)) {
-                    const coords = metadata.Coordinates.value.split(';').map(c => parseFloat(c.trim()));
-                    if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
-                        console.log('Adding subject location from Coordinates:', {
-                            lat: coords[0],
-                            lon: coords[1],
+                // Process coordinates from the API response
+                if (page.coordinates) {
+                    for (const coord of page.coordinates) {
+                        console.log('Processing coordinate:', {
+                            type: coord.type,
+                            lat: coord.lat,
+                            lon: coord.lon,
                             title: title
                         });
-                        locations.push({ 
-                            lat: coords[0], 
-                            lon: coords[1], 
-                            title, 
-                            thumbUrl, 
-                            type: 'subject'
-                        });
+
+                        // Only add if we have valid coordinates
+                        if (!isNaN(coord.lat) && !isNaN(coord.lon)) {
+                            const locationType = coord.type === 'camera' ? 'camera' : 'subject';
+                            locations.push({
+                                lat: coord.lat,
+                                lon: coord.lon,
+                                title,
+                                thumbUrl,
+                                type: locationType
+                            });
+                        }
                     }
                 }
             }
