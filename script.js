@@ -112,7 +112,7 @@ async function fetchUserData() {
                     <h3>${location.title.replace('File:', '')}</h3>
                     ${location.thumbUrl ? `
                         <div class="popup-image">
-                            <img src="${location.thumbUrl.replace(/(\d+)px-/, '300px-')}" alt="${location.title}">
+                            <img src="${location.thumbUrl.replace(/\/[^/]+$/, '/thumb$&/300px-' + location.title.replace('File:', ''))}" alt="${location.title}">
                         </div>
                     ` : ''}
                     <div class="popup-footer">
