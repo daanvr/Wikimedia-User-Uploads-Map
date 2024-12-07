@@ -9,6 +9,12 @@ const map = new mapboxgl.Map({
     zoom: 2
 });
 
+// Handle map style changes
+document.getElementById('style-selector').addEventListener('change', function() {
+    const selectedStyle = this.value;
+    map.setStyle(selectedStyle);
+});
+
 // Add map controls
 map.addControl(new mapboxgl.NavigationControl());
 
@@ -20,6 +26,7 @@ async function fetchUserData() {
         return;
     }
 
+    let loadedImages = 0;
     // Show loading indicator
     document.getElementById('loading').style.display = 'block';
 
@@ -49,27 +56,32 @@ async function fetchUserData() {
             const pages = Object.values(fileData.query?.pages || {});
             for (const page of pages) {
                 const metadata = page.imageinfo?.[0]?.extmetadata || {};
-                console.log('Processing file:', page.title);
-                console.log('Metadata:', metadata);
+                loadedImages++;
+                document.getElementById('loading-text').innerHTML = `Loading images: ${loadedImages} of ${images.length}`;
                 
-                // Try different metadata fields that might contain coordinates
+                // Extract camera location
+                let cameraLat, cameraLon;
                 if (metadata.GPSLatitude?.value && metadata.GPSLongitude?.value) {
-                    let lat = metadata.GPSLatitude.value;
-                    let lon = metadata.GPSLongitude.value;
-                    
-                    // Clean up coordinate strings if needed
-                    lat = lat.replace(/[^\d.-]/g, '');
-                    lon = lon.replace(/[^\d.-]/g, '');
-                    
-                    lat = parseFloat(lat);
-                    lon = parseFloat(lon);
-                    
-                    if (!isNaN(lat) && !isNaN(lon)) {
-                        const title = page.title;
-                        const thumbUrl = page.imageinfo?.[0]?.url;
-                        console.log('Found coordinates:', lat, lon);
-                        locations.push({ lat, lon, title, thumbUrl });
-                    }
+                    cameraLat = parseFloat(metadata.GPSLatitude.value.replace(/[^\d.-]/g, ''));
+                    cameraLon = parseFloat(metadata.GPSLongitude.value.replace(/[^\d.-]/g, ''));
+                }
+
+                // Extract object location
+                let objectLat, objectLon;
+                if (metadata.GPSDestLatitude?.value && metadata.GPSDestLongitude?.value) {
+                    objectLat = parseFloat(metadata.GPSDestLatitude.value.replace(/[^\d.-]/g, ''));
+                    objectLon = parseFloat(metadata.GPSDestLongitude.value.replace(/[^\d.-]/g, ''));
+                }
+
+                const title = page.title;
+                const thumbUrl = page.imageinfo?.[0]?.url;
+
+                if (!isNaN(cameraLat) && !isNaN(cameraLon)) {
+                    locations.push({ lat: cameraLat, lon: cameraLon, title, thumbUrl, type: 'camera' });
+                }
+
+                if (!isNaN(objectLat) && !isNaN(objectLon)) {
+                    locations.push({ lat: objectLat, lon: objectLon, title, thumbUrl, type: 'object' });
                 } else if (metadata.Coordinates?.value) {
                     console.log('Found Coordinates field:', metadata.Coordinates.value);
                     // Try to parse coordinates in format "XX.XXX; YY.YYY"
@@ -113,10 +125,11 @@ async function fetchUserData() {
                 </div>
             `);
 
-            const marker = new mapboxgl.Marker()
+            const markerColor = location.type === 'camera' ? '#0078d4' : '#d40000';
+            const marker = new mapboxgl.Marker({ color: markerColor })
                 .setLngLat([location.lon, location.lat])
                 .addTo(map);
-
+                
             // Add hover functionality
             const markerElement = marker.getElement();
             let hoverPopup = null;
@@ -149,7 +162,8 @@ async function fetchUserData() {
         // Update stats
         const statsDiv = document.getElementById('stats');
         statsDiv.innerHTML = `
-            Total images found: ${images.length}<br>
+            Username: ${username}<br>
+            Total images: ${images.length}<br>
             Images with location: ${locations.length}
         `;
 
@@ -171,13 +185,17 @@ async function fetchUserData() {
         }
     } catch (error) {
         console.error('Error:', error);
-        console.log('Error fetching data. Please try again.');
-        document.getElementById('stats').innerHTML = 'Error fetching data. Please try again.';
+        document.getElementById('message').innerHTML = 'Error fetching data. Please try again.';
     } finally {
         // Hide loading indicator
         document.getElementById('loading').style.display = 'none';
     }
 }
+
+// Focus the input box on page load
+window.onload = () => {
+    document.getElementById('username').focus();
+};
 
 // Add click event listener
 document.getElementById('fetch').addEventListener('click', fetchUserData);

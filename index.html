@@ -12,11 +12,18 @@
     <div id="controls">
         <input type="text" id="username" placeholder="Enter Wikimedia username">
         <button id="fetch">Show Uploads on Map</button>
+        <select id="style-selector">
+            <option value="mapbox://styles/mapbox/streets-v11">Streets</option>
+            <option value="mapbox://styles/mapbox/outdoors-v11">Outdoors</option>
+            <option value="mapbox://styles/mapbox/satellite-v9">Satellite</option>
+            <option value="mapbox://styles/mapbox/satellite-streets-v11">Satellite Streets</option>
+        </select>
+        <div id="message"></div>
         <div id="stats"></div>
     </div>
     <div id="loading">
         <div class="spinner"></div>
-        <div>Loading user data...</div>
+        <div id="loading-text">Loading user data...</div>
     </div>
 
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
