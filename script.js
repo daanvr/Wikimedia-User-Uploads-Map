@@ -91,27 +91,6 @@ async function fetchUserData() {
                     }
                 }
 
-                // Check for camera location in metadata
-                if (metadata.GPSLatitude?.value && metadata.GPSLongitude?.value) {
-                    const lat = parseFloat(metadata.GPSLatitude.value);
-                    const lon = parseFloat(metadata.GPSLongitude.value);
-                    
-                    // console.log('Processing camera location from metadata:', {
-                    //     lat: lat,
-                    //     lon: lon,
-                    //     title: title
-                    // });
-
-                    if (!isNaN(lat) && !isNaN(lon)) {
-                        locations.push({
-                            lat: lat,
-                            lon: lon,
-                            title,
-                            thumbUrl,
-                            type: 'camera'
-                        });
-                    }
-                }
 
                 // Check for subject location in metadata
                 if (metadata.Coordinates?.value) {
