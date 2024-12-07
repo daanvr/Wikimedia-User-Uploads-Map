@@ -97,87 +97,135 @@ async function fetchUserData() {
             }
         }
 
-        // Clear existing markers
-        document.querySelectorAll('.mapboxgl-marker').forEach(marker => marker.remove());
+        // Remove existing layers and sources
+        if (map.getLayer('photo-locations')) map.removeLayer('photo-locations');
+        if (map.getSource('photos')) map.removeSource('photos');
 
-        // Add new markers
-        locations.forEach(location => {
-            // Create a popup but don't add it to the marker yet
-            // Create popup without content initially
-            const popup = new mapboxgl.Popup({ 
-                offset: 25, 
+        // Convert locations to GeoJSON
+        const geojson = {
+            type: 'FeatureCollection',
+            features: locations.map(location => ({
+                type: 'Feature',
+                geometry: {
+                    type: 'Point',
+                    coordinates: [location.lon, location.lat]
+                },
+                properties: {
+                    title: location.title,
+                    thumbUrl: location.thumbUrl,
+                    type: location.type || 'object'
+                }
+            }))
+        };
+
+        // Add the GeoJSON source
+        map.addSource('photos', {
+            type: 'geojson',
+            data: geojson
+        });
+
+        // Add the circle layer
+        map.addLayer({
+            'id': 'photo-locations',
+            'type': 'circle',
+            'source': 'photos',
+            'paint': {
+                'circle-radius': [
+                    'interpolate',
+                    ['linear'],
+                    ['zoom'],
+                    2, 3,  // At zoom level 2, circles are 3px
+                    8, 5,  // At zoom level 8, circles are 5px
+                    16, 7  // At zoom level 16, circles are 7px
+                ],
+                'circle-color': [
+                    'match',
+                    ['get', 'type'],
+                    'camera', '#0078d4',
+                    '#d40000'
+                ],
+                'circle-stroke-width': 1.5,
+                'circle-stroke-color': '#ffffff'
+            }
+        });
+
+        // Add hover state
+        let hoverPopup = null;
+        
+        map.on('mouseenter', 'photo-locations', (e) => {
+            map.getCanvas().style.cursor = 'pointer';
+            
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const properties = e.features[0].properties;
+            
+            if (properties.thumbUrl) {
+                hoverPopup = new mapboxgl.Popup({
+                    offset: 15,
+                    closeButton: false,
+                    className: 'hover-popup'
+                })
+                .setLngLat(coordinates)
+                .setHTML(`
+                    <div class="popup-image">
+                        <img src="${properties.thumbUrl.replace(/wikipedia\/commons\/([a-z0-9]\/[a-z0-9]{2})\//, 'wikipedia/commons/thumb/$1/')}/300px-${properties.title.replace('File:', '')}" alt="${properties.title}">
+                    </div>
+                `)
+                .addTo(map);
+            }
+        });
+
+        map.on('mouseleave', 'photo-locations', () => {
+            map.getCanvas().style.cursor = '';
+            if (hoverPopup) {
+                hoverPopup.remove();
+                hoverPopup = null;
+            }
+        });
+
+        // Handle clicks
+        map.on('click', 'photo-locations', (e) => {
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const properties = e.features[0].properties;
+            
+            // Remove any existing popups
+            const existingPopups = document.getElementsByClassName('mapboxgl-popup');
+            Array.from(existingPopups).forEach(popup => popup.remove());
+            
+            const popupContent = `
+                <div class="popup-content">
+                    <h3>${properties.title.replace('File:', '')}</h3>
+                    ${properties.thumbUrl ? `
+                        <div class="popup-image">
+                            <img src="${properties.thumbUrl.replace(/wikipedia\/commons\/([a-z0-9]\/[a-z0-9]{2})\//, 'wikipedia/commons/thumb/$1/')}/300px-${properties.title.replace('File:', '')}" alt="${properties.title}">
+                        </div>
+                    ` : ''}
+                    <div class="popup-footer">
+                        <a href="https://commons.wikimedia.org/wiki/${encodeURIComponent(properties.title)}" 
+                           target="_blank" rel="noopener noreferrer"
+                           class="commons-link">
+                           View on Wikimedia Commons
+                        </a>
+                    </div>
+                </div>
+            `;
+
+            new mapboxgl.Popup({
+                offset: 15,
                 className: 'custom-popup',
                 closeOnClick: false
-            });
+            })
+            .setLngLat(coordinates)
+            .setHTML(popupContent)
+            .addTo(map);
+        });
 
-            const markerColor = location.type === 'camera' ? '#0078d4' : '#d40000';
-            const marker = new mapboxgl.Marker({ color: markerColor })
-                .setLngLat([location.lon, location.lat])
-                .addTo(map);
-                
-            // Add hover functionality
-            const markerElement = marker.getElement();
-            let hoverPopup = null;
-
-            markerElement.addEventListener('mouseenter', () => {
-                if (location.thumbUrl) {
-                    hoverPopup = new mapboxgl.Popup({ 
-                        offset: 25, 
-                        closeButton: false,
-                        className: 'hover-popup'
-                    })
-                    .setLngLat([location.lon, location.lat])
-                    .setHTML(`
-                        <div class="popup-image">
-                            <img src="${location.thumbUrl.replace(/wikipedia\/commons\/([a-z0-9]\/[a-z0-9]{2})\//, 'wikipedia/commons/thumb/$1/')}/300px-${location.title.replace('File:', '')}" alt="${location.title}">
-                        </div>
-                    `)
-                    .addTo(map);
-                }
-            });
-
-            markerElement.addEventListener('mouseleave', () => {
-                if (hoverPopup) {
-                    hoverPopup.remove();
-                    hoverPopup = null;
-                }
-            });
-
-            // Add click handler to map to close popups
-            map.on('click', () => {
+        // Add click handler to map to close popups
+        map.on('click', (e) => {
+            // Only close popups if we didn't click a feature
+            if (!map.queryRenderedFeatures(e.point, { layers: ['photo-locations'] }).length) {
                 const existingPopups = document.getElementsByClassName('mapboxgl-popup');
                 Array.from(existingPopups).forEach(popup => popup.remove());
-            });
-
-            // Add click functionality to marker
-            markerElement.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent the map click handler from firing
-                // Remove any existing popups
-                const existingPopups = document.getElementsByClassName('mapboxgl-popup');
-                Array.from(existingPopups).forEach(popup => popup.remove());
-                
-                // Generate popup content when opened
-                const popupContent = `
-                    <div class="popup-content">
-                        <h3>${location.title.replace('File:', '')}</h3>
-                        ${location.thumbUrl ? `
-                            <div class="popup-image">
-                                <img src="${location.thumbUrl.replace(/wikipedia\/commons\/([a-z0-9]\/[a-z0-9]{2})\//, 'wikipedia/commons/thumb/$1/')}/300px-${location.title.replace('File:', '')}" alt="${location.title}">
-                            </div>
-                        ` : ''}
-                        <div class="popup-footer">
-                            <a href="https://commons.wikimedia.org/wiki/${encodeURIComponent(location.title)}" 
-                               target="_blank" rel="noopener noreferrer"
-                               class="commons-link">
-                               View on Wikimedia Commons
-                            </a>
-                        </div>
-                    </div>
-                `;
-                popup.setLngLat([location.lon, location.lat])
-                     .setHTML(popupContent)
-                     .addTo(map);
-            });
+            }
         });
 
         // Update stats
