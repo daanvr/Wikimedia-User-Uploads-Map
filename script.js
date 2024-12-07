@@ -91,9 +91,6 @@ async function fetchUserData() {
                     }
                 }
 
-                // Also check metadata for coordinates
-                const metadata = page.imageinfo?.[0]?.extmetadata || {};
-                
                 // Check for camera location in metadata
                 if (metadata.GPSLatitude?.value && metadata.GPSLongitude?.value) {
                     const lat = parseFloat(metadata.GPSLatitude.value);
