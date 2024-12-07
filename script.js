@@ -59,6 +59,11 @@ async function fetchUserData() {
                 loadedImages++;
                 document.getElementById('loading-text').innerHTML = `Loading images: ${loadedImages} of ${images.length}`;
                 
+                console.log('Processing image:', {
+                    title: page.title,
+                    metadata: metadata
+                });
+                
                 // Extract camera location
                 let cameraLat, cameraLon;
                 if (metadata.GPSLatitude?.value && metadata.GPSLongitude?.value) {
@@ -78,6 +83,11 @@ async function fetchUserData() {
 
                 // Add camera location if available
                 if (!isNaN(cameraLat) && !isNaN(cameraLon)) {
+                    console.log('Adding camera location:', {
+                        lat: cameraLat,
+                        lon: cameraLon,
+                        title: title
+                    });
                     locations.push({ 
                         lat: cameraLat, 
                         lon: cameraLon, 
@@ -89,6 +99,11 @@ async function fetchUserData() {
 
                 // First try to add subject location from GPS destination coordinates
                 if (!isNaN(objectLat) && !isNaN(objectLon)) {
+                    console.log('Adding subject location from GPS dest:', {
+                        lat: objectLat,
+                        lon: objectLon,
+                        title: title
+                    });
                     locations.push({ 
                         lat: objectLat, 
                         lon: objectLon, 
@@ -102,6 +117,11 @@ async function fetchUserData() {
                 else if (metadata.Coordinates?.value && isNaN(cameraLat)) {
                     const coords = metadata.Coordinates.value.split(';').map(c => parseFloat(c.trim()));
                     if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+                        console.log('Adding subject location from Coordinates:', {
+                            lat: coords[0],
+                            lon: coords[1],
+                            title: title
+                        });
                         locations.push({ 
                             lat: coords[0], 
                             lon: coords[1], 
@@ -221,6 +241,12 @@ async function fetchUserData() {
         map.on('click', ['subject-locations', 'camera-locations'], (e) => {
             const coordinates = e.features[0].geometry.coordinates.slice();
             const properties = e.features[0].properties;
+            
+            console.log('Clicked feature:', {
+                coordinates: coordinates,
+                properties: properties,
+                layer: e.features[0].layer.id
+            });
             
             // Remove any existing popups
             const existingPopups = document.getElementsByClassName('mapboxgl-popup');
