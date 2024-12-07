@@ -87,7 +87,7 @@ async function fetchUserData() {
                     });
                 }
 
-                // Add subject location from either GPS dest coordinates or regular coordinates
+                // First try to add subject location from GPS destination coordinates
                 if (!isNaN(objectLat) && !isNaN(objectLon)) {
                     locations.push({ 
                         lat: objectLat, 
@@ -96,7 +96,10 @@ async function fetchUserData() {
                         thumbUrl, 
                         type: 'subject'
                     });
-                } else if (metadata.Coordinates?.value) {
+                } 
+                // If no GPS destination coordinates, try regular coordinates
+                // but only if there was no camera location (to avoid duplicates)
+                else if (metadata.Coordinates?.value && isNaN(cameraLat)) {
                     const coords = metadata.Coordinates.value.split(';').map(c => parseFloat(c.trim()));
                     if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
                         locations.push({ 
