@@ -162,6 +162,7 @@ async function fetchUserData() {
         // Update stats
         const statsDiv = document.getElementById('stats');
         statsDiv.innerHTML = `User: ${username} | Images: ${images.length} | Located: ${locations.length}`;
+        statsDiv.style.display = 'block';
 
         if (locations.length) {
             // Calculate bounds of all markers
@@ -178,6 +179,7 @@ async function fetchUserData() {
         } else {
             console.log('No geotagged images found for this user.');
             statsDiv.innerHTML += '<br>No geotagged images found.';
+            statsDiv.style.display = 'block';
         }
     } catch (error) {
         console.error('Error:', error);

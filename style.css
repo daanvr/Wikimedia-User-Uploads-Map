@@ -74,6 +74,7 @@ button:hover {
 }
 
 #stats {
+    display: none;
     position: absolute;
     bottom: 20px;
     left: 50%;
