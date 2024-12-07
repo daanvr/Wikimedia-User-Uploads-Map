@@ -79,7 +79,7 @@ async function fetchUserData() {
 
                         // Only add if we have valid coordinates
                         if (!isNaN(coord.lat) && !isNaN(coord.lon)) {
-                            const locationType = coord.type === 'camera' ? 'camera' : 'subject';
+                            const locationType = coord.type;
                             locations.push({
                                 lat: coord.lat,
                                 lon: coord.lon,
@@ -136,7 +136,7 @@ async function fetchUserData() {
         }
 
         // Remove existing layers and sources
-        if (map.getLayer('subject-locations')) map.removeLayer('subject-locations');
+        if (map.getLayer('object-locations')) map.removeLayer('object-locations');
         if (map.getLayer('camera-locations')) map.removeLayer('camera-locations');
         if (map.getSource('photos')) map.removeSource('photos');
 
@@ -163,12 +163,12 @@ async function fetchUserData() {
             data: geojson
         });
 
-        // Add the subject locations layer
+        // Add the object locations layer
         map.addLayer({
-            'id': 'subject-locations',
+            'id': 'object-locations',
             'type': 'circle',
             'source': 'photos',
-            'filter': ['==', ['get', 'type'], 'subject'],
+            'filter': ['==', ['get', 'type'], 'object'],
             'paint': {
                 'circle-radius': [
                     'interpolate',
@@ -208,7 +208,7 @@ async function fetchUserData() {
         // Add hover state
         let hoverPopup = null;
         
-        map.on('mouseenter', ['subject-locations', 'camera-locations'], (e) => {
+        map.on('mouseenter', ['object-locations', 'camera-locations'], (e) => {
             map.getCanvas().style.cursor = 'pointer';
             
             const coordinates = e.features[0].geometry.coordinates.slice();
@@ -230,7 +230,7 @@ async function fetchUserData() {
             }
         });
 
-        map.on('mouseleave', ['subject-locations', 'camera-locations'], () => {
+        map.on('mouseleave', ['object-locations', 'camera-locations'], () => {
             map.getCanvas().style.cursor = '';
             if (hoverPopup) {
                 hoverPopup.remove();
@@ -239,7 +239,7 @@ async function fetchUserData() {
         });
 
         // Handle clicks
-        map.on('click', ['subject-locations', 'camera-locations'], (e) => {
+        map.on('click', ['object-locations', 'camera-locations'], (e) => {
             const coordinates = e.features[0].geometry.coordinates.slice();
             const properties = e.features[0].properties;
             
@@ -284,7 +284,7 @@ async function fetchUserData() {
         // Add click handler to map to close popups
         map.on('click', (e) => {
             // Only close popups if we didn't click a feature
-            if (!map.queryRenderedFeatures(e.point, { layers: ['subject-locations', 'camera-locations'] }).length) {
+            if (!map.queryRenderedFeatures(e.point, { layers: ['object-locations', 'camera-locations'] }).length) {
                 const existingPopups = document.getElementsByClassName('mapboxgl-popup');
                 Array.from(existingPopups).forEach(popup => popup.remove());
             }
