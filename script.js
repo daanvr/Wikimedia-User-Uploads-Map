@@ -59,10 +59,10 @@ async function fetchUserData() {
                 loadedImages++;
                 document.getElementById('loading-text').innerHTML = `Loading images: ${loadedImages} of ${images.length}`;
                 
-                console.log('Processing image:', {
-                    title: page.title,
-                    metadata: metadata
-                });
+                // console.log('Processing image:', {
+                //     title: page.title,
+                //     metadata: metadata
+                // });
                 
                 const title = page.title;
                 const thumbUrl = page.imageinfo?.[0]?.url;
@@ -70,12 +70,12 @@ async function fetchUserData() {
                 // Process coordinates from the API response
                 if (page.coordinates) {
                     for (const coord of page.coordinates) {
-                        console.log('Processing coordinate from API:', {
-                            type: coord.type,
-                            lat: coord.lat,
-                            lon: coord.lon,
-                            title: title
-                        });
+                        // console.log('Processing coordinate from API:', {
+                        //     type: coord.type,
+                        //     lat: coord.lat,
+                        //     lon: coord.lon,
+                        //     title: title
+                        // });
 
                         // Only add if we have valid coordinates
                         if (!isNaN(coord.lat) && !isNaN(coord.lon)) {
@@ -96,11 +96,11 @@ async function fetchUserData() {
                     const lat = parseFloat(metadata.GPSLatitude.value);
                     const lon = parseFloat(metadata.GPSLongitude.value);
                     
-                    console.log('Processing camera location from metadata:', {
-                        lat: lat,
-                        lon: lon,
-                        title: title
-                    });
+                    // console.log('Processing camera location from metadata:', {
+                    //     lat: lat,
+                    //     lon: lon,
+                    //     title: title
+                    // });
 
                     if (!isNaN(lat) && !isNaN(lon)) {
                         locations.push({
