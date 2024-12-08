@@ -47,7 +47,7 @@ async function fetchUserData() {
             const batch = images.slice(i, i + 50);
             const titles = batch.map(img => img.title).join('|');
             
-            const metadataUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(titles)}&prop=imageinfo|coordinates&iiprop=extmetadata|url&coprop=type|name|dim|globe|primary&coprimary=all&format=json&origin=*`;
+            const metadataUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(titles)}&prop=imageinfo|coordinates&iiprop=extmetadata|url&coprop=type|name|dim|globe|region|country&coprimary=all&format=json&origin=*&props=claims`;
             console.log('Fetching metadata batch from:', metadataUrl);
             const fileResponse = await fetch(metadataUrl);
             const fileData = await fileResponse.json();
@@ -131,7 +131,7 @@ async function fetchUserData() {
                 properties: {
                     title: location.title,
                     thumbUrl: location.thumbUrl,
-                    type: location.type || 'object'
+                    type: location.type || 'non'
                 }
             }))
         };
