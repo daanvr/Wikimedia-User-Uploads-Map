@@ -2,6 +2,7 @@ import { MapHandler } from './mapHandler.js';
 import { UIStateManager } from './uiStateManager.js';
 import { WikimediaAPI } from './apiHandler.js';
 import { LocationProcessor } from './locationProcessor.js';
+import { TimelineManager } from './timelineManager.js';
 
 export class App {
     constructor() {
@@ -9,6 +10,8 @@ export class App {
         this.uiStateManager = new UIStateManager();
         this.api = new WikimediaAPI();
         this.locationProcessor = new LocationProcessor();
+        this.timelineManager = new TimelineManager();
+        this.locations = [];
         
         this.setupEventListeners();
     }
@@ -18,6 +21,14 @@ export class App {
             const username = event.detail.username;
             await this.fetchAndDisplayUserData(username);
         });
+
+        document.addEventListener('timelineSelection', (event) => {
+            const selectedImages = event.detail.images;
+            const filteredLocations = this.locations.filter(loc => 
+                selectedImages.some(img => img.title === loc.title)
+            );
+            this.mapHandler.addLocationsToMap(filteredLocations);
+        });
     }
 
     async fetchAndDisplayUserData(username) {
@@ -26,8 +37,10 @@ export class App {
             const contributionsData = await this.api.fetchUserContributions(username);
             const images = contributionsData.query?.allimages || [];
             
+            this.timelineManager.renderTimeline(images);
+            
             let loadedImages = 0;
-            const locations = [];
+            this.locations = [];
 
             // Process images in batches
             for (let i = 0; i < images.length; i += 50) {
@@ -42,7 +55,7 @@ export class App {
 
                 // Process locations from the batch
                 const batchLocations = this.locationProcessor.processImageData(imageDetails, structuredData);
-                locations.push(...batchLocations);
+                this.locations.push(...batchLocations);
 
                 // Update progress with loaded count and total
                 loadedImages += batch.length;
@@ -50,10 +63,10 @@ export class App {
             }
 
             // Update map with all locations
-            this.mapHandler.addLocationsToMap(locations);
+            this.mapHandler.addLocationsToMap(this.locations);
 
             // Update UI with final stats
-            const locatedImages = new Set(locations.map(loc => loc.title)).size;
+            const locatedImages = new Set(this.locations.map(loc => loc.title)).size;
             this.uiStateManager.updateStats(username, images.length, locatedImages);
 
         } catch (error) {
