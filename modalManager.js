@@ -14,8 +14,8 @@ export class ModalManager {
                 <div class="modal-info">
                     <h3 class="modal-title"></h3>
                     <div class="modal-links">
-                        <a href="" target="_blank" rel="noopener noreferrer" class="commons-link">
-                            View on Wikimedia Commons ⧉
+                        <a href="" target="_blank" rel="noopener noreferrer">
+                            View on Wikimedia Commons;
                         </a>
                     </div>
                 </div>
