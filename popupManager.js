@@ -43,7 +43,11 @@ export class PopupManager {
                         <img src="${properties.thumbUrl}" 
                              alt="${properties.title}"
                              onclick="document.dispatchEvent(new CustomEvent('showImageModal', 
-                                 { detail: { url: '${properties.thumbUrl.replace('/thumb/', '/').split('/').slice(0, -1).join('/')}' }}))">
+                                 { detail: { 
+                                     fullUrl: '${properties.thumbUrl.replace('/thumb/', '/').split('/').slice(0, -1).join('/')}',
+                                     title: '${properties.title}',
+                                     thumbUrl: '${properties.thumbUrl}'
+                                 }}))">
                     </div>
                 ` : ''}
                 <div class="popup-footer">

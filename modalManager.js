@@ -11,6 +11,14 @@ export class ModalManager {
         this.modal.innerHTML = `
             <div class="modal-content">
                 <img src="" alt="" class="modal-image">
+                <div class="modal-info">
+                    <h3 class="modal-title"></h3>
+                    <div class="modal-links">
+                        <a href="" target="_blank" rel="noopener noreferrer" class="commons-link">
+                            View on Wikimedia Commons ⧉
+                        </a>
+                    </div>
+                </div>
             </div>
         `;
 
@@ -30,9 +38,30 @@ export class ModalManager {
             }
             .modal-content {
                 display: flex;
-                justify-content: center;
+                flex-direction: column;
                 align-items: center;
+                justify-content: center;
                 height: 100%;
+                color: white;
+            }
+            .modal-info {
+                margin-top: 20px;
+                text-align: center;
+                background: rgba(0, 0, 0, 0.7);
+                padding: 15px;
+                border-radius: 8px;
+                max-width: 80%;
+            }
+            .modal-title {
+                margin: 0 0 10px 0;
+                font-size: 1.2em;
+            }
+            .modal-links a {
+                color: #fff;
+                text-decoration: none;
+            }
+            .modal-links a:hover {
+                text-decoration: underline;
             }
             .modal-image {
                 max-width: 80%;
@@ -53,9 +82,16 @@ export class ModalManager {
         this.modal.addEventListener('click', () => this.hideModal());
     }
 
-    showModal(imageUrl) {
+    showModal(imageData) {
         const modalImg = this.modal.querySelector('.modal-image');
-        modalImg.src = imageUrl;
+        const modalTitle = this.modal.querySelector('.modal-title');
+        const commonsLink = this.modal.querySelector('.commons-link');
+        
+        modalImg.src = imageData.fullUrl;
+        modalImg.alt = imageData.title;
+        modalTitle.textContent = imageData.title.replace('File:', '');
+        commonsLink.href = `https://commons.wikimedia.org/wiki/${encodeURIComponent(imageData.title)}`;
+        
         this.modal.style.display = 'block';
     }
 
