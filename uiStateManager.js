@@ -6,7 +6,7 @@ export class UIStateManager {
 
     setupEventListeners() {
         document.getElementById('fetch').addEventListener('click', () => this.handleFetchClick());
-        document.getElementById('username').addEventListener('keypress', (event) => {
+        document.getElementById('wikimedia-user').addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
                 this.handleFetchClick();
             }
@@ -57,7 +57,7 @@ export class UIStateManager {
     }
 
     getUsername() {
-        const usernameInput = document.getElementById('username');
+        const usernameInput = document.getElementById('wikimedia-user');
         return usernameInput ? usernameInput.value.trim() : '';
     }
 
