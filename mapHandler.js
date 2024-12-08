@@ -1,8 +1,9 @@
-import { CONFIG, LAYER_STYLES, LOCATION_TYPES } from './config.js';
+import { CONFIG, LAYER_STYLES } from './config.js';
+import { PopupManager } from './popupManager.js';
 
 export class MapHandler {
     #map;
-    #hoverPopup;
+    #popupManager;
     constructor(container) {
         mapboxgl.accessToken = CONFIG.mapboxToken;
         this.map = new mapboxgl.Map({
@@ -14,7 +15,7 @@ export class MapHandler {
         
         this.map.addControl(new mapboxgl.NavigationControl());
         this.setupStyleSelector();
-        this.hoverPopup = null;
+        this.#popupManager = new PopupManager(this.map);
     }
 
     setupStyleSelector() {
@@ -86,79 +87,28 @@ export class MapHandler {
 
     handleMouseEnter(e) {
         this.map.getCanvas().style.cursor = 'pointer';
-        
         const coordinates = e.features[0].geometry.coordinates.slice();
         const properties = e.features[0].properties;
-        
-        if (properties.thumbUrl) {
-            this.hoverPopup = new mapboxgl.Popup({
-                offset: 5,
-                closeButton: false,
-                className: 'hover-popup'
-            })
-            .setLngLat(coordinates)
-            .setHTML(`
-                <div class="popup-image">
-                    <img src="${properties.thumbUrl}" alt="${properties.title}">
-                </div>
-            `)
-            .addTo(this.map);
-        }
+        this.#popupManager.showHoverPopup(coordinates, properties);
     }
 
     handleMouseLeave() {
         this.map.getCanvas().style.cursor = '';
-        if (this.hoverPopup) {
-            this.hoverPopup.remove();
-            this.hoverPopup = null;
-        }
+        this.#popupManager.removeHoverPopup();
     }
 
     handleClick(e) {
         const coordinates = e.features[0].geometry.coordinates.slice();
         const properties = e.features[0].properties;
-        
-        this.removeExistingPopups();
-        
-        const popupContent = `
-            <div class="popup-content">
-                <h3>${properties.title.replace('File:', '')}</h3>
-                ${properties.thumbUrl ? `
-                    <div class="popup-image">
-                        <img src="${properties.thumbUrl}" alt="${properties.title}">
-                    </div>
-                ` : ''}
-                <div class="popup-footer">
-                    <a href="https://commons.wikimedia.org/wiki/${encodeURIComponent(properties.title)}" 
-                       target="_blank" rel="noopener noreferrer"
-                       class="commons-link">
-                       View on Wikimedia Commons
-                    </a>
-                </div>
-            </div>
-        `;
-
-        new mapboxgl.Popup({
-            offset: 5,
-            className: 'custom-popup',
-            closeOnClick: false
-        })
-        .setLngLat(coordinates)
-        .setHTML(popupContent)
-        .addTo(this.map);
+        this.#popupManager.showDetailPopup(coordinates, properties);
     }
 
     handleMapClick(e) {
         if (!this.map.queryRenderedFeatures(e.point, { 
             layers: ['object-locations', 'camera-locations'] 
         }).length) {
-            this.removeExistingPopups();
+            this.#popupManager.removeAllPopups();
         }
-    }
-
-    removeExistingPopups() {
-        const existingPopups = document.getElementsByClassName('mapboxgl-popup');
-        Array.from(existingPopups).forEach(popup => popup.remove());
     }
 
     fitMapToBounds(locations) {
