@@ -9,7 +9,7 @@ export class PopupManager {
         
         // Setup modal event listener
         document.addEventListener('showImageModal', (e) => {
-            this.modalManager.showModal(e.detail.url);
+            this.modalManager.showModal(e.detail);
         });
     }
 
