@@ -42,7 +42,6 @@ export class PopupManager {
                     <div class="popup-image">
                         <img src="${properties.thumbUrl}" 
                              alt="${properties.title}"
-                             style="cursor: pointer"
                              onclick="document.dispatchEvent(new CustomEvent('showImageModal', 
                                  { detail: { url: '${properties.thumbUrl.replace('/thumb/', '/').split('/').slice(0, -1).join('/')}' }}))">
                     </div>
