@@ -58,6 +58,22 @@ export class MapHandler {
 
     addLocationLayers() {
         ['object', 'camera'].forEach(type => {
+            // Add shadow layer first
+            this.map.addLayer({
+                'id': `${type}-locations-shadow`,
+                'type': 'circle',
+                'source': 'photos',
+                'filter': ['==', ['get', 'type'], type],
+                'paint': {
+                    'circle-radius': LAYER_STYLES[type].radius + 4,
+                    'circle-color': '#000000',
+                    'circle-opacity': 0.3,
+                    'circle-blur': 1,
+                    'circle-translate': [3, 3]
+                }
+            });
+
+            // Add main point layer
             this.map.addLayer({
                 'id': `${type}-locations`,
                 'type': 'circle',
@@ -74,7 +90,7 @@ export class MapHandler {
     }
 
     setupEventListeners() {
-        const layers = ['object-locations', 'camera-locations'];
+        const layers = ['object-locations', 'camera-locations', 'object-locations-shadow', 'camera-locations-shadow'];
         
         layers.forEach(layer => {
             this.map.on('mouseenter', layer, this.handleMouseEnter.bind(this));
