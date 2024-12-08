@@ -38,6 +38,10 @@ export class ModalManager {
                 max-width: 80%;
                 max-height: 80vh;
                 object-fit: contain;
+                cursor: zoom-out;
+            }
+            .popup-image img {
+                cursor: zoom-in;
             }
         `;
 
