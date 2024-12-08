@@ -53,64 +53,49 @@ async function fetchUserData() {
             const fileData = await fileResponse.json();
             console.log('Metadata batch response:', fileData);
 
-            const pages = Object.values(fileData.query?.pages || {});
-            for (const page of pages) {
-                const metadata = page.imageinfo?.[0]?.extmetadata || {};
+            const entities = Object.values(fileData.entities || {});
+            for (const entity of entities) {
                 loadedImages++;
                 document.getElementById('loading-text').innerHTML = `Loading images: ${loadedImages} of ${images.length}`;
                 
-                // console.log('Processing image:', {
-                //     title: page.title,
-                //     metadata: metadata
-                // });
-                
-                const title = page.title;
-                const thumbUrl = page.imageinfo?.[0]?.url;
+                const title = entity.title || entity.id;
+                const thumbUrl = entity.claims?.P18?.[0]?.mainsnak?.datavalue?.value;
 
-                // Process coordinates from the API response
-                if (page.coordinates) {
-                    for (const coord of page.coordinates) {
-                        // console.log('Processing coordinate from API:', {
-                        //     type: coord.type,
-                        //     lat: coord.lat,
-                        //     lon: coord.lon,
-                        //     title: title
-                        // });
-
-                        // Only add if we have valid coordinates
-                        if (!isNaN(coord.lat) && !isNaN(coord.lon)) {
-                            const locationType = coord.type;
-                            locations.push({
-                                lat: coord.lat,
-                                lon: coord.lon,
-                                title,
-                                thumbUrl,
-                                type: locationType
-                            });
-                        }
+                // Process camera location
+                const cameraLocation = entity.statements?.P1259?.[0]?.mainsnak?.datavalue?.value;
+                if (cameraLocation) {
+                    const lat = parseFloat(cameraLocation.latitude);
+                    const lon = parseFloat(cameraLocation.longitude);
+                    
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        locations.push({
+                            lat: lat,
+                            lon: lon,
+                            title,
+                            thumbUrl,
+                            type: 'camera'
+                        });
                     }
                 }
 
-
-                // Check for subject location in metadata
-                if (metadata.Coordinates?.value) {
-                    const coords = metadata.Coordinates.value.split(';').map(c => parseFloat(c.trim()));
+                // Process object location
+                const objectLocation = entity.statements?.P9149?.[0]?.mainsnak?.datavalue?.value;
+                if (objectLocation) {
+                    const lat = parseFloat(objectLocation.latitude);
+                    const lon = parseFloat(objectLocation.longitude);
                     
-                    console.log('Processing object location from metadata:', {
-                        coords: coords,
-                        title: title
-                    });
-
-                    if (coords.length === 2 && !isNaN(coords[0]) && !isNaN(coords[1])) {
+                    if (!isNaN(lat) && !isNaN(lon)) {
                         locations.push({
-                            lat: coords[0],
-                            lon: coords[1],
+                            lat: lat,
+                            lon: lon,
                             title,
                             thumbUrl,
                             type: 'object'
                         });
                     }
                 }
+
+
             }
         }
 
