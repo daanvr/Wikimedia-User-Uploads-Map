@@ -59,17 +59,28 @@ async function fetchUserData() {
             const imageDetailsResponse = await fetch(imageDetailsUrl);
             const imageDetails = await imageDetailsResponse.json();
 
+            // Create a map of page IDs to image details
+            const imageDetailsMap = {};
+            const pages = imageDetails.query?.pages || {};
+            Object.entries(pages).forEach(([pageId, pageData]) => {
+                imageDetailsMap[pageId] = {
+                    title: pageData.title,
+                    thumbUrl: pageData.imageinfo?.[0]?.thumburl
+                };
+            });
+
             const entities = Object.values(structuredData.entities || {});
             for (const entity of entities) {
                 loadedImages++;
                 document.getElementById('loading-text').innerHTML = `Loading images: ${loadedImages} of ${images.length}`;
                 
-                // Get image details from the second API response
-                const pages = imageDetails.query?.pages || {};
-                const pageData = Object.values(pages)[0];
-                const title = pageData?.title;
-                const imageInfo = pageData?.imageinfo?.[0] || {};
-                const thumbUrl = imageInfo.thumburl;
+                // Extract ID without 'M' prefix and find matching image details
+                const entityId = entity.id.replace('M', '');
+                const imageData = imageDetailsMap[entityId];
+                
+                if (!imageData) continue;
+                
+                const { title, thumbUrl } = imageData;
 
                 // Process camera location
                 const cameraLocation = entity.statements?.P1259?.[0]?.mainsnak?.datavalue?.value;
