@@ -47,9 +47,6 @@ export class ModalManager {
             .modal-info {
                 margin-top: 20px;
                 text-align: center;
-                background: rgba(0, 0, 0, 0.7);
-                padding: 15px;
-                border-radius: 8px;
                 max-width: 80%;
             }
             .modal-title {
