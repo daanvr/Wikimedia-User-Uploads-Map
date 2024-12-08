@@ -3,6 +3,15 @@ export class TimelineManager {
         this.container = this.createTimelineContainer();
     }
 
+    showError(message) {
+        const timelineContent = this.container.querySelector('.timeline-content');
+        timelineContent.innerHTML = `
+            <div class="timeline-error">
+                <p>${message}</p>
+            </div>
+        `;
+    }
+
     createTimelineContainer() {
         const container = document.createElement('div');
         container.id = 'timeline-container';
@@ -23,13 +32,19 @@ export class TimelineManager {
     }
 
     renderTimeline(images) {
+        if (!images || images.length === 0) {
+            this.showError('No images available to display in timeline');
+            return;
+        }
+
         const timelineContent = this.container.querySelector('.timeline-content');
         timelineContent.innerHTML = '';
 
-        // Sort images by timestamp
-        const sortedImages = [...images].sort((a, b) => 
-            new Date(a.timestamp) - new Date(b.timestamp)
-        );
+        try {
+            // Sort images by timestamp
+            const sortedImages = [...images].sort((a, b) => 
+                new Date(a.timestamp) - new Date(b.timestamp)
+            );
 
         // Group by year and month
         const groups = this.groupImagesByDate(sortedImages);
