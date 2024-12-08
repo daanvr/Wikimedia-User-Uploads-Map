@@ -1,8 +1,16 @@
+import { ModalManager } from './modalManager.js';
+
 export class PopupManager {
     constructor(map) {
         this.map = map;
         this.hoverPopup = null;
         this.activePopup = null;
+        this.modalManager = new ModalManager();
+        
+        // Setup modal event listener
+        document.addEventListener('showImageModal', (e) => {
+            this.modalManager.showModal(e.detail.url);
+        });
     }
 
     showHoverPopup(coordinates, properties) {
@@ -32,7 +40,11 @@ export class PopupManager {
                 <h3>${properties.title.replace('File:', '')}</h3>
                 ${properties.thumbUrl ? `
                     <div class="popup-image">
-                        <img src="${properties.thumbUrl}" alt="${properties.title}">
+                        <img src="${properties.thumbUrl}" 
+                             alt="${properties.title}"
+                             style="cursor: pointer"
+                             onclick="document.dispatchEvent(new CustomEvent('showImageModal', 
+                                 { detail: { url: '${properties.thumbUrl.replace('/thumb/', '/').split('/').slice(0, -1).join('/')}' }}))">
                     </div>
                 ` : ''}
                 <div class="popup-footer">
