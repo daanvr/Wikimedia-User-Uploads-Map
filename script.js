@@ -64,11 +64,11 @@ async function fetchUserData() {
                 loadedImages++;
                 document.getElementById('loading-text').innerHTML = `Loading images: ${loadedImages} of ${images.length}`;
                 
-                const title = entity.title || entity.id;
-                const numericId = entity.id?.replace('M', '') || '';
+                // Get the title from the entity
+                const title = Object.keys(imageDetails.query?.pages || {})[0];
                 
                 // Get image details from the second API response
-                const pageData = imageDetails.query?.pages?.[numericId];
+                const pageData = imageDetails.query?.pages?.[title];
                 const imageInfo = pageData?.imageinfo?.[0] || {};
                 const thumbUrl = imageInfo.thumburl;
 
@@ -198,7 +198,7 @@ async function fetchUserData() {
                 .setLngLat(coordinates)
                 .setHTML(`
                     <div class="popup-image">
-                        <img src="${properties.thumbUrl.replace(/wikipedia\/commons\/([a-z0-9]\/[a-z0-9]{2})\//, 'wikipedia/commons/thumb/$1/')}/300px-${properties.title.replace('File:', '')}" alt="${properties.title}">
+                        <img src="${properties.thumbUrl}" alt="${properties.title}">
                     </div>
                 `)
                 .addTo(map);
