@@ -13,7 +13,7 @@ export class UIStateManager {
         });
     }
 
-    updateLoadingState(isLoading, progress = 0) {
+    updateLoadingState(isLoading, loadedCount = 0, totalCount = 0) {
         this.loadingState = isLoading;
         const loadingElement = document.getElementById('loading');
         const loadingText = document.getElementById('loading-text');
@@ -22,8 +22,9 @@ export class UIStateManager {
             loadingElement.style.display = isLoading ? 'block' : 'none';
         }
 
-        if (loadingText && progress > 0) {
-            loadingText.textContent = `Loading images: ${progress}`;
+        if (loadingText && loadedCount > 0) {
+            const percentage = Math.round((loadedCount / totalCount) * 100);
+            loadingText.textContent = `Loading images: ${loadedCount} of ${totalCount} (${percentage}%)`;
         }
     }
 

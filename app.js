@@ -44,9 +44,9 @@ export class App {
                 const batchLocations = this.locationProcessor.processImageData(imageDetails, structuredData);
                 locations.push(...batchLocations);
 
-                // Update progress
+                // Update progress with loaded count and total
                 loadedImages += batch.length;
-                this.uiStateManager.updateLoadingState(true, `${loadedImages} of ${images.length}`);
+                this.uiStateManager.updateLoadingState(true, loadedImages, images.length);
             }
 
             // Update map with all locations
