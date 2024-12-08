@@ -47,19 +47,30 @@ async function fetchUserData() {
             const batch = images.slice(i, i + 50);
             const titles = batch.map(img => img.title).join('|');
             
-            const metadataUrl = `https://commons.wikimedia.org/w/api.php?action=wbgetentities&titles=${encodeURIComponent(titles)}&sites=commonswiki&props=claims|descriptions|labels&format=json&origin=*`;
-            console.log('Fetching metadata batch from:', metadataUrl);
-            const fileResponse = await fetch(metadataUrl);
-            const fileData = await fileResponse.json();
-            console.log('Metadata batch response:', fileData);
+            // Fetch structured data
+            const structuredDataUrl = `https://commons.wikimedia.org/w/api.php?action=wbgetentities&titles=${encodeURIComponent(titles)}&sites=commonswiki&props=claims|descriptions|labels&format=json&origin=*`;
+            console.log('Fetching structured data from:', structuredDataUrl);
+            const structuredResponse = await fetch(structuredDataUrl);
+            const structuredData = await structuredResponse.json();
+            
+            // Fetch image details
+            const imageDetailsUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(titles)}&prop=imageinfo&format=json&iiprop=url|dimensions|size|timestamp|thumb&iiurlwidth=500&iiurlheight=500&origin=*`;
+            console.log('Fetching image details from:', imageDetailsUrl);
+            const imageDetailsResponse = await fetch(imageDetailsUrl);
+            const imageDetails = await imageDetailsResponse.json();
 
-            const entities = Object.values(fileData.entities || {});
+            const entities = Object.values(structuredData.entities || {});
             for (const entity of entities) {
                 loadedImages++;
                 document.getElementById('loading-text').innerHTML = `Loading images: ${loadedImages} of ${images.length}`;
                 
                 const title = entity.title || entity.id;
-                const thumbUrl = entity.claims?.P18?.[0]?.mainsnak?.datavalue?.value;
+                const numericId = entity.id?.replace('M', '') || '';
+                
+                // Get image details from the second API response
+                const pageData = imageDetails.query?.pages?.[numericId];
+                const imageInfo = pageData?.imageinfo?.[0] || {};
+                const thumbUrl = imageInfo.thumburl;
 
                 // Process camera location
                 const cameraLocation = entity.statements?.P1259?.[0]?.mainsnak?.datavalue?.value;
