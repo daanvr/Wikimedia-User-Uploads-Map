@@ -46,25 +46,33 @@ export class TimelineManager {
                 new Date(a.timestamp) - new Date(b.timestamp)
             );
 
-        // Group by year and month
-        const groups = this.groupImagesByDate(sortedImages);
-        
-        // Create timeline elements
-        groups.forEach(group => {
-            const groupEl = document.createElement('div');
-            groupEl.className = 'timeline-group';
-            groupEl.innerHTML = `
-                <div class="timeline-date">${group.label}</div>
-                <div class="timeline-bar" style="height: ${group.count * 2}px"></div>
-                <div class="timeline-count">${group.count}</div>
-            `;
-            timelineContent.appendChild(groupEl);
-        });
+            // Group by year and month
+            const groups = this.groupImagesByDate(sortedImages);
+            
+            // Create timeline elements
+            groups.forEach(group => {
+                const groupEl = document.createElement('div');
+                groupEl.className = 'timeline-group';
+                groupEl.innerHTML = `
+                    <div class="timeline-date">${group.label}</div>
+                    <div class="timeline-bar" style="height: ${group.count * 2}px"></div>
+                    <div class="timeline-count">${group.count}</div>
+                `;
+                timelineContent.appendChild(groupEl);
+            });
 
-        this.setupTimelineInteractions(groups, sortedImages);
+            this.setupTimelineInteractions(groups, sortedImages);
+        } catch (error) {
+            console.error('Error rendering timeline:', error);
+            this.showError('Failed to render timeline. Please try again.');
+        }
     }
 
     groupImagesByDate(images) {
+        if (!Array.isArray(images)) {
+            throw new Error('Invalid images data provided');
+        }
+
         const groups = new Map();
         
         images.forEach(img => {
@@ -86,6 +94,11 @@ export class TimelineManager {
     }
 
     setupTimelineInteractions(groups, images) {
+        if (!groups || !images) {
+            console.warn('Missing data for timeline interactions');
+            return;
+        }
+
         const bars = this.container.querySelectorAll('.timeline-bar');
         bars.forEach((bar, index) => {
             bar.addEventListener('click', () => {
