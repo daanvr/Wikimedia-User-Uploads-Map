@@ -82,7 +82,7 @@ export class ModalManager {
     showModal(imageData) {
         const modalImg = this.modal.querySelector('.modal-image');
         const modalTitle = this.modal.querySelector('.modal-title');
-        const commonsLink = this.modal.querySelector('.commons-link');
+        const commonsLink = this.modal.querySelector('.modal-links a');
         
         modalImg.src = imageData.fullUrl;
         modalImg.alt = imageData.title;
