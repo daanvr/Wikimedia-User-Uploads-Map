@@ -1,6 +1,8 @@
-import { CONFIG, LAYER_STYLES } from './config.js';
+import { CONFIG, LAYER_STYLES, LOCATION_TYPES } from './config.js';
 
 export class MapHandler {
+    #map;
+    #hoverPopup;
     constructor(container) {
         mapboxgl.accessToken = CONFIG.mapboxToken;
         this.map = new mapboxgl.Map({
