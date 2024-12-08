@@ -52,7 +52,7 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-#username { 
+#wikimedia-user { 
     width: 200px;
     padding: 8px;
     border: 1px solid #ccc;
