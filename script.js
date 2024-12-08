@@ -64,11 +64,10 @@ async function fetchUserData() {
                 loadedImages++;
                 document.getElementById('loading-text').innerHTML = `Loading images: ${loadedImages} of ${images.length}`;
                 
-                // Get the title from the entity
-                const title = Object.keys(imageDetails.query?.pages || {})[0];
-                
                 // Get image details from the second API response
-                const pageData = imageDetails.query?.pages?.[title];
+                const pages = imageDetails.query?.pages || {};
+                const pageData = Object.values(pages)[0];
+                const title = pageData?.title;
                 const imageInfo = pageData?.imageinfo?.[0] || {};
                 const thumbUrl = imageInfo.thumburl;
 
