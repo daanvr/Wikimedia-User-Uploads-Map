@@ -41,6 +41,7 @@ async function fetchUserData() {
         const images = data.query?.allimages || [];
         console.log('Found images:', images.length);
         const locations = [];
+        const imagesWithLocations = new Set();
 
         // Batch process images in groups of 50
         for (let i = 0; i < images.length; i += 50) {
@@ -96,6 +97,7 @@ async function fetchUserData() {
                             thumbUrl,
                             type: 'camera'
                         });
+                        imagesWithLocations.add(title);
                     }
                 }
 
@@ -113,6 +115,7 @@ async function fetchUserData() {
                             thumbUrl,
                             type: 'object'
                         });
+                        imagesWithLocations.add(title);
                     }
                 }
 
@@ -277,7 +280,7 @@ async function fetchUserData() {
 
         // Update stats
         const statsDiv = document.getElementById('stats');
-        statsDiv.innerHTML = `User: ${username} | Images: ${images.length} | Located: ${locations.length}`;
+        statsDiv.innerHTML = `User: ${username} | Images: ${images.length} | Located: ${imagesWithLocations.size}`;
         statsDiv.style.display = 'block';
 
         if (locations.length) {
