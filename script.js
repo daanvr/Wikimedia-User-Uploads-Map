@@ -233,7 +233,7 @@ async function fetchUserData() {
                     <h3>${properties.title.replace('File:', '')}</h3>
                     ${properties.thumbUrl ? `
                         <div class="popup-image">
-                            <img src="${properties.thumbUrl.replace(/wikipedia\/commons\/([a-z0-9]\/[a-z0-9]{2})\//, 'wikipedia/commons/thumb/$1/')}/300px-${properties.title.replace('File:', '')}" alt="${properties.title}">
+                            <img src="${properties.thumbUrl}" alt="${properties.title}">
                         </div>
                     ` : ''}
                     <div class="popup-footer">
